@@ -40,16 +40,27 @@ Vue.component('kanban', {
             this.cards.push(cardItem);
         },
         deleteCard(id) {
-            console.log(id);
-            console.log(this.cards);
             for (let i = 0; i < this.cards.length; i++) {
                 if (this.cards[i].id == id) {
                     this.cards.splice(i, 1);
                 }
             }
         },
-        editCard() {
-            alert("editCard");
+        editCard(
+            id,
+            title,
+            description,
+            deadLine,
+            editTime
+        ) {
+            for (let i = 0; i < this.cards.length; i++) {
+                if (this.cards[i].id == id) {
+                    this.cards[i].title = title;
+                    this.cards[i].description = description;
+                    this.cards[i].deadLine = deadLine;
+                    this.cards[i].editTime = editTime;
+                }
+            }
         },
     }
 })
@@ -100,25 +111,55 @@ Vue.component('card', {
 
     template: `
     <div>
-        <p>Заголовок: {{card.title}}</p>
-        <p>Описание задачи: {{card.description}}</p>
-        <p>Дата создаиния: {{card.createdDate.getFullYear()}}-{{card.createdDate.getMonth() + 1}}-{{card.createdDate.getDate()}}</p>
-        <p>Дедлайн: {{card.deadLine}}</p>
-        <div class="card-actions">
-            <button @click="() => editCard()">Редактировать</button>
-            <button @click="() => deleteCard(card.id)">Удалить</button>
+        <div  v-if="!isEdit">
+            <p>Заголовок: {{card.title}}</p>
+            <p>Описание задачи: {{card.description}}</p>
+            <p>Дата создаиния: {{card.createdDate.getFullYear()}}-{{card.createdDate.getMonth() + 1}}-{{card.createdDate.getDate()}}</p>
+            <p>Дедлайн: {{card.deadLine}}</p>
+            <p  v-if="card.editTime">Дата Редактирования: {{card.editTime.getFullYear()}}-{{card.editTime.getMonth() + 1}}-{{card.editTime.getDate()}}</p>
+            <div class="card-actions">
+                <button @click="editCurrentCard">Редактировать</button>
+                <button @click="() => deleteCard(card.id)">Удалить</button>
+            </div>
+        </div>
+        <div  v-if="isEdit">
+            <h2>Edit mode</h2>
+            <p>Заголовок:</p>
+            <input :value="title" type="text" @input="event => title = event.target.value"/>
+            <p>Описание задачи:</p>
+            <input :value="description" type="text" @input="event => description = event.target.value"/>
+            <p>Дэдлайн:</p>
+            <input :value="deadLine" type="date" @input="event => deadLine = event.target.value"/>
+            <button @click="saveEdit">Save</button>
         </div>
     </div>
     `,
 
     data() {
         return {
-
+            isEdit: false,
+            title: this.card.title,
+            description: this.card.description,
+            deadLine: this.card.deadLine,
         }
     },
 
     methods: {
+        editCurrentCard() {
+            this.isEdit = true;
+        },
+        saveEdit() {
+            this.isEdit = false;
+            let editTime = new Date();
 
+            this.editCard(
+                this.card.id,
+                this.title,
+                this.description,
+                this.deadLine,
+                editTime
+            );
+        }
     }
 })
 
