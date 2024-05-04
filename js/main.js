@@ -6,17 +6,31 @@ Vue.component('kanban', {
             <div class="colum">
                 <h3>Запланированные задачи</h3>
                 <createCard class="card" :addCard="addCard"></createCard>
-                <card class="card" :key="card.id" v-for="card in cards" v-if="card.status == 0" 
-                    :card="card" :deleteCard="deleteCard" :editCard="editCard"></card>
+                <card class="card" :key="card.id" v-for="card in cards" 
+                    v-if="card.status == 0" :card="card" 
+                    :deleteCard="deleteCard" :editCard="editCard" 
+                    :back="back" :forword="forword"></card>
             </div>  
             <div class="colum">
                 <h3>Задачи в работе</h3>
+                <card class="card" :key="card.id" v-for="card in cards" 
+                    v-if="card.status == 1" :card="card" 
+                    :deleteCard="deleteCard" :editCard="editCard" 
+                    :back="back" :forword="forword"></card>
             </div>
             <div class="colum">
                 <h3>Тестирование</h3>
+                <card class="card" :key="card.id" v-for="card in cards" 
+                    v-if="card.status == 2" :card="card" 
+                    :deleteCard="deleteCard" :editCard="editCard" 
+                    :back="back" :forword="forword"></card>
             </div>
             <div class="colum">
                 <h3>Выполненные задачи</h3>
+                <card class="card" :key="card.id" v-for="card in cards" 
+                    v-if="card.status == 3" :card="card" 
+                    :deleteCard="deleteCard" :editCard="editCard" 
+                    :back="back" :forword="forword"></card>
             </div>
         </div>
     </div>`,
@@ -62,6 +76,26 @@ Vue.component('kanban', {
                 }
             }
         },
+        back(id) {
+            for (let i = 0; i < this.cards.length; i++) {
+                if (this.cards[i].id == id) {
+                    let currentCard = this.cards[i];
+                    // если карта во втором столбце переносим ее в 1
+                    if (currentCard.status == 2)
+                        currentCard.status -= 1;
+                }
+            }
+        },
+        forword(id) {
+            for (let i = 0; i < this.cards.length; i++) {
+                if (this.cards[i].id == id) {
+                    let currentCard = this.cards[i];
+                    // переносим карту в следующий столбец
+                    if (currentCard.status < 3)
+                        currentCard.status += 1;
+                }
+            }
+        }
     }
 })
 
@@ -107,6 +141,14 @@ Vue.component('card', {
             type: Function,
             required:true,
         },
+        back: {
+            type: Function,
+            required:true,
+        },
+        forword: {
+            type: Function,
+            required:true,
+        }
     },
 
     template: `
@@ -117,12 +159,16 @@ Vue.component('card', {
             <p>Дата создаиния: {{card.createdDate.getFullYear()}}-{{card.createdDate.getMonth() + 1}}-{{card.createdDate.getDate()}}</p>
             <p>Дедлайн: {{card.deadLine}}</p>
             <p  v-if="card.editTime">Дата Редактирования: {{card.editTime.getFullYear()}}-{{card.editTime.getMonth() + 1}}-{{card.editTime.getDate()}}</p>
-            <div class="card-actions">
+            <div class="card-actions" v-if="!(card.status == 3)">
+                <button v-if="!(card.status == 0)" @click="() => back(card.id)">Назад</button>
+                <button  @click="() => forword(card.id)">Вперед</button>
+            </div>
+            <div class="card-actions" v-if="!(card.status == 3)">
                 <button @click="editCurrentCard">Редактировать</button>
-                <button @click="() => deleteCard(card.id)">Удалить</button>
+                <button v-if="card.status == 0" @click="() => deleteCard(card.id)">Удалить</button>
             </div>
         </div>
-        <div  v-if="isEdit">
+        <div v-if="isEdit">
             <h2>Edit mode</h2>
             <p>Заголовок:</p>
             <input :value="title" type="text" @input="event => title = event.target.value"/>

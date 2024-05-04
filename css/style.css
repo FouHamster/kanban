@@ -17,6 +17,14 @@
     border-radius: 10px;
 }
 
+.card-actions {
+    display: flex;
+    padding: 5px;
+    margin: 5px;
+    align-items: center;
+    justify-content: space-around;
+}
+
 input {
     margin: 10px;
 }
